@@ -1,8 +1,9 @@
 package net.minecraft.src;
 
-import org.lwjgl.opengl.ARBMultitexture;
+//MCAndroidPatch: changed imports
+/*import org.lwjgl.opengl.ARBMultitexture;
 import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLContext;*/
 
 public class OpenGlHelper
 {
@@ -22,7 +23,8 @@ public class OpenGlHelper
      */
     public static void initializeTextures()
     {
-        useMultitextureARB = GLContext.getCapabilities().GL_ARB_multitexture && !GLContext.getCapabilities().OpenGL13;
+        //MCAndroidPatch: FIXME
+        /*useMultitextureARB = GLContext.getCapabilities().GL_ARB_multitexture && !GLContext.getCapabilities().OpenGL13;
 
         if (useMultitextureARB)
         {
@@ -33,7 +35,7 @@ public class OpenGlHelper
         {
             lightmapDisabled = 33984;
             lightmapEnabled = 33985;
-        }
+        }*/
     }
 
     /**
@@ -41,14 +43,15 @@ public class OpenGlHelper
      */
     public static void setActiveTexture(int par0)
     {
-        if (useMultitextureARB)
+        //MCAndroidPatch: FIXME
+        /*if (useMultitextureARB)
         {
             ARBMultitexture.glActiveTextureARB(par0);
         }
         else
         {
             GL13.glActiveTexture(par0);
-        }
+        }*/
     }
 
     /**
@@ -56,14 +59,15 @@ public class OpenGlHelper
      */
     public static void setClientActiveTexture(int par0)
     {
-        if (useMultitextureARB)
+        //MCAndroidPatch: FIXME
+        /*if (useMultitextureARB)
         {
             ARBMultitexture.glClientActiveTextureARB(par0);
         }
         else
         {
             GL13.glClientActiveTexture(par0);
-        }
+        }*/
     }
 
     /**
@@ -71,13 +75,14 @@ public class OpenGlHelper
      */
     public static void setLightmapTextureCoords(int par0, float par1, float par2)
     {
-        if (useMultitextureARB)
+        //MCAndroidPatch: FIXME
+        /*if (useMultitextureARB)
         {
             ARBMultitexture.glMultiTexCoord2fARB(par0, par1, par2);
         }
         else
         {
             GL13.glMultiTexCoord2f(par0, par1, par2);
-        }
+        }*/
     }
 }

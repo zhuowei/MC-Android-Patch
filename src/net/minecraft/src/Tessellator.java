@@ -5,16 +5,19 @@ import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
-import org.lwjgl.opengl.ARBVertexBufferObject;
+//MCAndroidPatch - changed imports
+/*import org.lwjgl.opengl.ARBVertexBufferObject;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GLContext;
+import org.lwjgl.opengl.GLContext;*/
+import android.opengl.GLES11;
+//MCAndroidPatch end
 
 public class Tessellator
 {
     /**
      * Boolean used to check whether quads should be drawn as four triangles. Initialized to true and never changed.
      */
-    private static boolean convertQuadsToTriangles = false;
+    private static boolean convertQuadsToTriangles = true; //MCAndroidPatch
 
     /**
      * Boolean used to check if we should use vertex buffers. Initialized to false and never changed.
@@ -132,12 +135,12 @@ public class Tessellator
         this.floatBuffer = this.byteBuffer.asFloatBuffer();
         this.shortBuffer = this.byteBuffer.asShortBuffer();
         this.rawBuffer = new int[par1];
-        this.useVBO = tryVBO && GLContext.getCapabilities().GL_ARB_vertex_buffer_object;
+        this.useVBO = tryVBO; //MCAndroidPatch: removed && GLContext.getCapabilities().GL_ARB_vertex_buffer_object;
 
         if (this.useVBO)
         {
             this.vertexBuffers = GLAllocation.createDirectIntBuffer(this.vboCount);
-            ARBVertexBufferObject.glGenBuffersARB(this.vertexBuffers);
+            GLES11.glGenBuffers(this.vboCount, this.vertexBuffers); //MCAndroidPatch
         }
     }
 
@@ -160,27 +163,28 @@ public class Tessellator
                 this.intBuffer.put(this.rawBuffer, 0, this.rawBufferIndex);
                 this.byteBuffer.position(0);
                 this.byteBuffer.limit(this.rawBufferIndex * 4);
+                //MCAndroidPatch begin
 
                 if (this.useVBO)
                 {
                     this.vboIndex = (this.vboIndex + 1) % this.vboCount;
-                    ARBVertexBufferObject.glBindBufferARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, this.vertexBuffers.get(this.vboIndex));
-                    ARBVertexBufferObject.glBufferDataARB(ARBVertexBufferObject.GL_ARRAY_BUFFER_ARB, this.byteBuffer, ARBVertexBufferObject.GL_STREAM_DRAW_ARB);
+                    GLES11.glBindBuffer(GLES11.GL_ARRAY_BUFFER, this.vertexBuffers.get(this.vboIndex));
+                    GLES11.glBufferData(GLES11.GL_ARRAY_BUFFER, this.byteBuffer.limit(), this.byteBuffer, GLES11.GL_DYNAMIC_DRAW); //FIXME: STREAM_DRAW
                 }
 
                 if (this.hasTexture)
                 {
                     if (this.useVBO)
                     {
-                        GL11.glTexCoordPointer(2, GL11.GL_FLOAT, 32, 12L);
+                        GLES11.glTexCoordPointer(2, GLES11.GL_FLOAT, 32, 12);
                     }
                     else
                     {
                         this.floatBuffer.position(3);
-                        GL11.glTexCoordPointer(2, 32, this.floatBuffer);
+                        GLES11.glTexCoordPointer(2, GLES11.GL_FLOAT, 32, this.floatBuffer);
                     }
 
-                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GLES11.glEnableClientState(GLES11.GL_TEXTURE_COORD_ARRAY);
                 }
 
                 if (this.hasBrightness)
@@ -189,15 +193,15 @@ public class Tessellator
 
                     if (this.useVBO)
                     {
-                        GL11.glTexCoordPointer(2, GL11.GL_SHORT, 32, 28L);
+                        GLES11.glTexCoordPointer(2, GLES11.GL_SHORT, 32, 28);
                     }
                     else
                     {
                         this.shortBuffer.position(14);
-                        GL11.glTexCoordPointer(2, 32, this.shortBuffer);
+                        GLES11.glTexCoordPointer(2, GLES11.GL_SHORT, 32, this.shortBuffer);
                     }
 
-                    GL11.glEnableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GLES11.glEnableClientState(GLES11.GL_TEXTURE_COORD_ARRAY);
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapDisabled);
                 }
 
@@ -205,76 +209,77 @@ public class Tessellator
                 {
                     if (this.useVBO)
                     {
-                        GL11.glColorPointer(4, GL11.GL_UNSIGNED_BYTE, 32, 20L);
+                        GLES11.glColorPointer(4, GLES11.GL_UNSIGNED_BYTE, 32, 20);
                     }
                     else
                     {
                         this.byteBuffer.position(20);
-                        GL11.glColorPointer(4, true, 32, this.byteBuffer);
+                        GLES11.glColorPointer(4, GLES11.GL_UNSIGNED_BYTE, 32, this.byteBuffer);
                     }
 
-                    GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+                    GLES11.glEnableClientState(GLES11.GL_COLOR_ARRAY);
                 }
 
                 if (this.hasNormals)
                 {
                     if (this.useVBO)
                     {
-                        GL11.glNormalPointer(GL11.GL_UNSIGNED_BYTE, 32, 24L);
+                        GLES11.glNormalPointer(GLES11.GL_UNSIGNED_BYTE, 32, 24);
                     }
                     else
                     {
                         this.byteBuffer.position(24);
-                        GL11.glNormalPointer(32, this.byteBuffer);
+                        GLES11.glNormalPointer(32, GLES11.GL_UNSIGNED_BYTE, this.byteBuffer);
                     }
 
-                    GL11.glEnableClientState(GL11.GL_NORMAL_ARRAY);
+                    GLES11.glEnableClientState(GLES11.GL_NORMAL_ARRAY);
                 }
 
                 if (this.useVBO)
                 {
-                    GL11.glVertexPointer(3, GL11.GL_FLOAT, 32, 0L);
+                    GLES11.glVertexPointer(3, GLES11.GL_FLOAT, 32, 0);
                 }
                 else
                 {
                     this.floatBuffer.position(0);
-                    GL11.glVertexPointer(3, 32, this.floatBuffer);
+                    GLES11.glVertexPointer(3, GLES11.GL_FLOAT, 32, this.floatBuffer);
                 }
 
-                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                GLES11.glEnableClientState(GLES11.GL_VERTEX_ARRAY);
 
                 if (this.drawMode == 7 && convertQuadsToTriangles)
                 {
-                    GL11.glDrawArrays(GL11.GL_TRIANGLES, 0, this.vertexCount);
+                    GLES11.glDrawArrays(GLES11.GL_TRIANGLES, 0, this.vertexCount);
                 }
                 else
                 {
-                    GL11.glDrawArrays(this.drawMode, 0, this.vertexCount);
+                    GLES11.glDrawArrays(this.drawMode, 0, this.vertexCount);
                 }
 
-                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+                GLES11.glDisableClientState(GLES11.GL_VERTEX_ARRAY);
 
                 if (this.hasTexture)
                 {
-                    GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GLES11.glDisableClientState(GLES11.GL_TEXTURE_COORD_ARRAY);
                 }
 
                 if (this.hasBrightness)
                 {
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapEnabled);
-                    GL11.glDisableClientState(GL11.GL_TEXTURE_COORD_ARRAY);
+                    GLES11.glDisableClientState(GLES11.GL_TEXTURE_COORD_ARRAY);
                     OpenGlHelper.setClientActiveTexture(OpenGlHelper.lightmapDisabled);
                 }
 
                 if (this.hasColor)
                 {
-                    GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+                    GLES11.glDisableClientState(GLES11.GL_COLOR_ARRAY);
                 }
 
                 if (this.hasNormals)
                 {
-                    GL11.glDisableClientState(GL11.GL_NORMAL_ARRAY);
+                    GLES11.glDisableClientState(GLES11.GL_NORMAL_ARRAY);
                 }
+                //MCAndroidPatch end
             }
 
             int var1 = this.rawBufferIndex * 4;
